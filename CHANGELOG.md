@@ -2,6 +2,15 @@
 
 All notable changes to CampusTask are documented in this file.
 
+## [0.4.0] — 2026-06-19
+
+### Added
+- `list_tasks(sort_by="priority")` — sort task list by priority (high → medium → low)
+- `list_tasks(overdue_only=True)` — filter to show only overdue todo tasks
+- CLI: `python main.py list --sort priority` option
+- CLI: `python main.py list --overdue` flag
+- Test cases for priority sorting and overdue filtering
+
 ## [0.3.0] — 2026-06-12
 
 ### Added

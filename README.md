@@ -14,20 +14,21 @@
 
 ## 需求清单
 
-| # | 功能 | 优先级 | 验收标准 | 用户原话 | 预估工作量 |
-|---|------|--------|----------|----------|------------|
-| 1 | 截止日期字段 | P0 | `add --deadline YYYY-MM-DD` 创建带日期的任务 | "我怕忘记交作业"（用户B） | 小（已实现于 v0.2） |
-| 2 | 优先级字段 | P0 | `add --priority high\|medium\|low` | "我想知道哪些最重要"（用户C） | 小（已实现于 v0.2） |
-| 3 | 按截止日期排序 | P1 | `list --sort deadline` 按日期升序排列 | "我想一眼看出哪个最先截止"（用户B） | 小 |
-| 4 | 导出为 CSV | P1 | `export tasks.csv` 生成可打开的 CSV 文件 | "我想打印出来贴桌上或发给同学"（用户A） | 小 |
-| 5 | 逾期提醒 | P2 | `list --overdue` 显示已过期的待办任务 | "过了截止日期还不知道就糟糕了"（用户C） | 中（未实现，留为 backlog） |
+| # | 功能 | 优先级 | 验收标准 | 用户原话 | 预估工作量 | 风险 |
+|---|------|--------|----------|----------|------------|------|
+| 1 | 截止日期字段 | P0 | `add --deadline YYYY-MM-DD` 创建带日期的任务 | "我怕忘记交作业"（用户B） | 小（已实现于 v0.2） | 低：字段可选，不影响现有逻辑 |
+| 2 | 优先级字段 | P0 | `add --priority high\|medium\|low` | "我想知道哪些最重要"（用户C） | 小（已实现于 v0.2） | 低：字段可选，枚举值可控 |
+| 3 | 按截止日期排序 | P1 | `list --sort deadline` 按日期升序排列 | "我想一眼看出哪个最先截止"（用户B） | 小 | 低：纯排序逻辑，无副作用 |
+| 4 | 导出为 CSV | P1 | `export tasks.csv` 生成可打开的 CSV 文件 | "我想打印出来贴桌上或发给同学"（用户A） | 小 | 低：标准库 csv 模块，UTF-8 BOM 确保 Excel 兼容 |
+| 5 | 按优先级排序 | P1 | `list --sort priority` 按 high→medium→low 排列 | "我想优先做重要的事"（用户C） | 小 | 低：纯排序逻辑，无副作用 |
+| 6 | 逾期提醒 | P2 | `list --overdue` 显示已过期的待办任务 | "过了截止日期还不知道就糟糕了"（用户C） | 小 | 中：依赖系统时间，需与 deadline 字段协同，时区差异可能导致误判 |
 
 ### 选择理由
 
-本次迭代选择实现需求 #3（排序）和 #4（导出 CSV），理由：
-- 两个需求均属于 P1 且预估工作量小，可在一次迭代中完成
-- deadline 和 priority 字段（P0）已在 v0.2 完成，排序和导出是对已有字段的自然延伸
-- 逾期提醒（#5）依赖更复杂的日期比较逻辑和用户通知机制，留到下一版本
+本次迭代选择实现需求 #3（按截止日期排序）、#4（导出 CSV）、#5（按优先级排序）和 #6（逾期提醒），理由：
+- deadline 和 priority 字段（P0）已在 v0.2 完成，排序、导出和逾期是对已有字段的自然延伸
+- 四个需求均预估工作量小，可在一次迭代中完成
+- 逾期提醒从 P2 backlog 提升到本迭代，因为依赖的 deadline 字段已稳定
 
 ## 新增功能
 
@@ -51,6 +52,24 @@ python main.py list --status todo --sort deadline
 # 与状态过滤组合使用
 ```
 
+### 按优先级排序
+
+```bash
+python main.py list --sort priority
+# 按 high → medium → low 排列
+# 无优先级的任务排在末尾
+
+python main.py list --status todo --sort priority
+# 与状态过滤组合使用
+```
+
+### 查看逾期任务
+
+```bash
+python main.py list --overdue
+# 显示已过截止日期且仍未完成的待办任务
+```
+
 ## 使用方法
 
 ```bash
@@ -59,6 +78,12 @@ python main.py add "提交实验报告" --deadline 2026-06-30 --priority high
 
 # 按截止日期排序查看
 python main.py list --sort deadline
+
+# 按优先级排序查看
+python main.py list --sort priority
+
+# 查看逾期任务
+python main.py list --overdue
 
 # 查看待办任务（按日期排序）
 python main.py list --status todo --sort deadline

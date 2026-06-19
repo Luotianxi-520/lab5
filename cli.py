@@ -8,7 +8,7 @@ def print_usage():
     """输出使用说明。"""
     print("用法:")
     print("  python main.py add <任务标题>")
-    print("  python main.py list [--status done|todo] [--sort deadline]")
+    print("  python main.py list [--status done|todo] [--sort deadline|priority] [--overdue]")
     print("  python main.py done <任务编号>")
     print("  python main.py delete <任务编号>")
     print("  python main.py search <关键词>")
@@ -45,15 +45,25 @@ def handle_add(args):
 def handle_list(args=None):
     status_filter = None
     sort_by = None
+    overdue_only = False
     if args:
-        for i, arg in enumerate(args):
+        i = 0
+        while i < len(args):
+            arg = args[i]
             if arg == "--status" and i + 1 < len(args):
                 status_filter = args[i + 1]
+                i += 2
             elif arg == "--sort" and i + 1 < len(args):
                 sort_by = args[i + 1]
-    tasks = tm.list_tasks(status_filter=status_filter, sort_by=sort_by)
+                i += 2
+            elif arg == "--overdue":
+                overdue_only = True
+                i += 1
+            else:
+                i += 1
+    tasks = tm.list_tasks(status_filter=status_filter, sort_by=sort_by, overdue_only=overdue_only)
     if not tasks:
-        label = status_filter if status_filter else "任何"
+        label = "逾期" if overdue_only else (status_filter if status_filter else "任何")
         print(f"暂无{label}任务。")
         return
     for task in tasks:
